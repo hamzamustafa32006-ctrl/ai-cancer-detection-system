@@ -4,6 +4,7 @@
 An AI-powered diagnostic support platform for physicians. Doctors input electrical impedance spectroscopy measurements and receive instant tissue classification predictions (cancerous vs benign) based on a KNN classifier trained on 106 verified breast tissue samples.
 
 ## Recent Changes
+- 2026-02-12: Converted diagnosis to CSV file upload — batch processing multiple samples from uploaded file
 - 2026-02-12: Added Diagnosis page with KNN classifier for tissue prediction, prediction history stored in PostgreSQL
 - 2026-02-12: Refocused platform for physician use — doctor-facing landing page, diagnosis as primary feature
 - 2026-02-12: Initial platform build with dark scientific theme, 6 pages, impedance data dashboard
@@ -17,7 +18,7 @@ An AI-powered diagnostic support platform for physicians. Doctors input electric
 
 ## Pages
 1. **Home** (`/`) - Doctor-focused landing page with platform overview and CTA to diagnosis
-2. **Diagnosis** (`/diagnosis`) - Input form for 9 impedance features, AI prediction results, prediction history
+2. **Diagnosis** (`/diagnosis`) - CSV file upload for batch tissue classification, results table, prediction history
 3. **Dashboard** (`/dashboard`) - Interactive impedance data visualizations (bar, pie, scatter, radar charts)
 4. **Research** (`/research`) - Scientific rationale, mechanical properties evidence, AI pipeline details
 5. **Technology** (`/technology`) - Platform architecture, quantum physics integration, innovation factors
@@ -32,6 +33,7 @@ An AI-powered diagnostic support platform for physicians. Doctors input electric
 - GET /api/impedance-samples - All training data
 - GET /api/stats - Dataset statistics
 - POST /api/diagnosis - Submit 9 impedance features, returns prediction + confidence
+- POST /api/diagnosis-batch - Upload CSV file, returns batch predictions for all rows
 - GET /api/diagnosis-history - Recent prediction history
 
 ## Key Files
