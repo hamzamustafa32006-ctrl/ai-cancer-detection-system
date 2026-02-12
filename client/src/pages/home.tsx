@@ -6,11 +6,12 @@ import {
   Atom,
   Zap,
   Brain,
-  Microscope,
+  Stethoscope,
   ArrowRight,
   Activity,
-  Layers,
   Shield,
+  Database,
+  TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePageMeta } from "@/hooks/use-page-meta";
@@ -24,50 +25,50 @@ const fadeUp = {
   }),
 };
 
-const capabilities = [
+const features = [
   {
-    icon: Microscope,
-    title: "Raman Spectroscopy",
-    description: "Molecular vibrational fingerprinting for cellular characterization at the quantum level",
+    icon: Stethoscope,
+    title: "AI-Powered Diagnosis",
+    description: "Input electrical impedance measurements and receive instant tissue classification with confidence scoring",
   },
   {
     icon: Zap,
-    title: "Electrical Impedance",
-    description: "Multi-frequency impedance spectroscopy revealing intrinsic tissue electrical properties",
+    title: "Electrical Impedance Analysis",
+    description: "Multi-frequency impedance spectroscopy analysis across 9 key tissue biomarkers",
   },
   {
     icon: Brain,
-    title: "AI Classification",
-    description: "Neural network and logistic regression models with quantum-inspired feature extraction",
+    title: "Machine Learning Classification",
+    description: "KNN-based classifier trained on 106 verified breast tissue samples across 6 tissue classes",
   },
   {
-    icon: Layers,
-    title: "Multimodal Fusion",
-    description: "Late fusion architecture combining spectral and impedance modalities for enhanced accuracy",
+    icon: Database,
+    title: "Evidence-Based Predictions",
+    description: "Predictions backed by real clinical impedance data with transparent nearest-neighbor voting",
   },
   {
     icon: Activity,
-    title: "Real-Time Analysis",
-    description: "Automated preprocessing pipelines with confidence scoring and probabilistic interpretation",
+    title: "Instant Results",
+    description: "Real-time analysis with confidence scores and detailed breakdown of classifier decisions",
   },
   {
     icon: Shield,
-    title: "Validated Pipeline",
-    description: "Rigorous train/validation/test splitting with calibrated thresholds and AUC reporting",
+    title: "Clinical Decision Support",
+    description: "Designed as a support tool for physicians — complements, never replaces, clinical judgment",
   },
 ];
 
 const stats = [
+  { value: "106", label: "Training Samples", suffix: "" },
   { value: "6", label: "Tissue Classes", suffix: "" },
   { value: "9", label: "Impedance Features", suffix: "" },
-  { value: "19", label: "Quantum Features", suffix: "" },
-  { value: "3", label: "AI Models", suffix: "" },
+  { value: "KNN", label: "Classifier Model", suffix: "" },
 ];
 
 export default function Home() {
   usePageMeta({
-    title: "Overview - Quantum Cancer Diagnostics",
-    description: "A next-generation diagnostic platform exploring cancer as a measurable physical phenomenon through molecular vibrations, electrical impedance, and AI-driven classification.",
+    title: "QuantumDx - AI Cancer Diagnostics for Physicians",
+    description: "AI-powered tissue classification platform for physicians. Input impedance spectroscopy data and receive instant predictions on whether tissue samples are cancerous or benign.",
   });
 
   return (
@@ -86,30 +87,31 @@ export default function Home() {
         >
           <Badge variant="secondary" className="mb-6" data-testid="badge-status">
             <div className="w-1.5 h-1.5 rounded-full bg-chart-4 mr-2" />
-            Research & Prototyping Phase
+            Diagnostic Support Tool for Physicians
           </Badge>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4 text-foreground">
-            Quantum-Integrated AI for{" "}
-            <span className="text-primary">Cancer Diagnostics</span>
+            AI-Powered{" "}
+            <span className="text-primary">Tissue Classification</span>
           </h1>
 
           <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mb-8 leading-relaxed">
-            A next-generation diagnostic platform exploring cancer as a measurable physical
-            phenomenon through molecular vibrations, electrical impedance, and AI-driven
-            classification.
+            A diagnostic support platform for physicians. Enter electrical impedance
+            spectroscopy measurements and receive instant AI-driven predictions
+            on tissue classification — distinguishing cancerous from benign tissue.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/dashboard">
-              <Button data-testid="button-explore-dashboard">
-                Explore Dashboard
+            <Link href="/diagnosis">
+              <Button data-testid="button-start-diagnosis">
+                <Stethoscope className="w-4 h-4 mr-2" />
+                Start Diagnosis
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-            <Link href="/research">
-              <Button variant="outline" data-testid="button-read-research">
-                Read the Research
+            <Link href="/dashboard">
+              <Button variant="outline" data-testid="button-view-data">
+                View Training Data
               </Button>
             </Link>
           </div>
@@ -127,7 +129,7 @@ export default function Home() {
               <motion.div key={stat.label} variants={fadeUp} custom={i + 1}>
                 <Card className="text-center">
                   <CardContent className="py-6 px-4">
-                    <div className="text-3xl font-bold text-primary font-mono mb-1">
+                    <div className="text-3xl font-bold text-primary font-mono mb-1" data-testid={`text-stat-${stat.label.toLowerCase().replace(/\s/g, "-")}`}>
                       {stat.value}{stat.suffix}
                     </div>
                     <div className="text-xs text-muted-foreground uppercase tracking-wider">
@@ -145,14 +147,13 @@ export default function Home() {
             className="mb-6"
           >
             <motion.div variants={fadeUp} custom={0} className="text-center mb-10">
-              <h2 className="text-2xl font-bold mb-2 text-foreground">Platform Capabilities</h2>
+              <h2 className="text-2xl font-bold mb-2 text-foreground">How It Works</h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                Integrating quantum physics, biophysics, and artificial intelligence
-                into a unified diagnostic framework
+                Designed for physicians who need fast, data-driven tissue classification support
               </p>
             </motion.div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {capabilities.map((cap, i) => (
+              {features.map((cap, i) => (
                 <motion.div key={cap.title} variants={fadeUp} custom={i + 1}>
                   <Card className="h-full hover-elevate">
                     <CardContent className="p-5">
@@ -174,19 +175,44 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-6 py-12 border-t border-border">
+      <section className="px-6 py-8">
+        <div className="max-w-3xl mx-auto">
+          <Card>
+            <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-md bg-primary/10">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground mb-2">Ready to Analyze?</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+                  Enter your patient's impedance spectroscopy data and get instant AI-powered
+                  tissue classification with confidence scoring.
+                </p>
+              </div>
+              <Link href="/diagnosis">
+                <Button data-testid="button-cta-diagnosis">
+                  <Stethoscope className="w-4 h-4 mr-2" />
+                  Go to Diagnosis
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="px-6 py-8 border-t border-border">
         <div className="max-w-3xl mx-auto text-center">
           <Atom className="w-8 h-8 text-primary mx-auto mb-4 opacity-60" />
           <h2 className="text-xl font-bold mb-3 text-foreground">Physics-First Diagnostics</h2>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-            By treating cancer detection as a problem of physical state differentiation
-            rather than image pattern recognition alone, this platform shifts toward a
-            physics-first diagnostic philosophy — analyzing intrinsic cellular properties
-            including molecular vibrational signatures, electrical impedance behavior,
-            and mechanical characteristics.
+            This platform treats cancer detection as a problem of physical state differentiation.
+            By analyzing intrinsic cellular properties — electrical impedance behavior,
+            membrane characteristics, and tissue structure — it provides objective,
+            quantitative diagnostic support independent of visual assessment alone.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
-            {["Raman Spectra", "Impedance", "Wavelet Analysis", "MLP Classifier", "Late Fusion"].map(
+            {["Impedance Spectroscopy", "KNN Classifier", "106 Training Samples", "6 Tissue Classes", "Real-Time Analysis"].map(
               (tag) => (
                 <Badge key={tag} variant="secondary" data-testid={`badge-tag-${tag.toLowerCase().replace(/\s/g, "-")}`}>
                   {tag}
@@ -194,6 +220,22 @@ export default function Home() {
               )
             )}
           </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-6">
+        <div className="max-w-3xl mx-auto">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-semibold">Disclaimer: </span>
+                This platform is a research-grade diagnostic support tool. AI predictions are
+                based on impedance data patterns and should be used to complement — not replace —
+                standard clinical pathology methods. Always confirm results with established
+                diagnostic procedures.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>

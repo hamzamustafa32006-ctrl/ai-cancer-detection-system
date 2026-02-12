@@ -1,6 +1,7 @@
 import { useLocation, Link } from "wouter";
 import {
   Home,
+  Stethoscope,
   BarChart3,
   FlaskConical,
   Cpu,
@@ -22,6 +23,7 @@ import {
 
 const navItems = [
   { title: "Overview", url: "/", icon: Home },
+  { title: "Diagnosis", url: "/diagnosis", icon: Stethoscope },
   { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Research", url: "/research", icon: FlaskConical },
   { title: "Technology", url: "/technology", icon: Cpu },

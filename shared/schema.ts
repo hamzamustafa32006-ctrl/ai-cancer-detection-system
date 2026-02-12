@@ -35,6 +35,42 @@ export const insertImpedanceSampleSchema = createInsertSchema(impedanceSamples).
 export type InsertImpedanceSample = z.infer<typeof insertImpedanceSampleSchema>;
 export type ImpedanceSample = typeof impedanceSamples.$inferSelect;
 
+export const predictionHistory = pgTable("prediction_history", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  i0: real("i0").notNull(),
+  pa500: real("pa500").notNull(),
+  hfs: real("hfs").notNull(),
+  da: real("da").notNull(),
+  area: real("area").notNull(),
+  aDa: real("a_da").notNull(),
+  maxIp: real("max_ip").notNull(),
+  dr: real("dr").notNull(),
+  p: real("p").notNull(),
+  predictedClass: text("predicted_class").notNull(),
+  confidence: real("confidence").notNull(),
+  isMalignant: integer("is_malignant").notNull(),
+  nearestClasses: text("nearest_classes").notNull(),
+});
+
+export const insertPredictionSchema = createInsertSchema(predictionHistory).omit({ id: true, createdAt: true });
+export type InsertPrediction = z.infer<typeof insertPredictionSchema>;
+export type Prediction = typeof predictionHistory.$inferSelect;
+
+export const diagnosisInputSchema = z.object({
+  i0: z.number().min(0, "Must be positive"),
+  pa500: z.number(),
+  hfs: z.number(),
+  da: z.number().min(0, "Must be positive"),
+  area: z.number().min(0, "Must be positive"),
+  aDa: z.number().min(0, "Must be positive"),
+  maxIp: z.number().min(0, "Must be positive"),
+  dr: z.number(),
+  p: z.number().min(0, "Must be positive"),
+});
+
+export type DiagnosisInput = z.infer<typeof diagnosisInputSchema>;
+
 export const tissueClassLabels: Record<string, string> = {
   car: "Carcinoma",
   fad: "Fibroadenoma",

@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import Diagnosis from "@/pages/diagnosis";
 import Dashboard from "@/pages/dashboard";
 import Research from "@/pages/research";
 import Technology from "@/pages/technology";
@@ -18,6 +19,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/diagnosis" component={Diagnosis} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/research" component={Research} />
       <Route path="/technology" component={Technology} />
