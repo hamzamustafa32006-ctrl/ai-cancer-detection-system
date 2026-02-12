@@ -4,6 +4,7 @@ import multer from "multer";
 import { storage } from "./storage";
 import { diagnosisInputSchema } from "@shared/schema";
 import { predict } from "./classifier";
+import { parseRamanCSV, analyzeRamanSpectrum } from "./raman-analyzer";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
@@ -50,151 +51,118 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/diagnosis", async (req, res) => {
-    try {
-      const parsed = diagnosisInputSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({
-          message: "Invalid input data",
-          errors: parsed.error.flatten().fieldErrors,
-        });
-      }
+  app.post(
+    "/api/diagnosis",
+    upload.fields([
+      { name: "impedanceFile", maxCount: 1 },
+      { name: "ramanFile", maxCount: 1 },
+    ]),
+    async (req, res) => {
+      try {
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-      const input = parsed.data;
-      const trainingData = await storage.getAllImpedanceSamples();
+        if (!files?.impedanceFile?.[0]) {
+          return res.status(400).json({ message: "Impedance data file is required" });
+        }
+        if (!files?.ramanFile?.[0]) {
+          return res.status(400).json({ message: "Raman spectroscopy file is required" });
+        }
 
-      if (trainingData.length === 0) {
-        return res.status(500).json({ message: "No training data available" });
-      }
+        const impedanceCsv = files.impedanceFile[0].buffer.toString("utf-8");
+        const ramanCsv = files.ramanFile[0].buffer.toString("utf-8");
 
-      const result = predict(input, trainingData);
+        const impedanceLines = impedanceCsv.trim().split(/\r?\n/);
+        if (impedanceLines.length < 2) {
+          return res.status(400).json({ message: "Impedance CSV must have a header row and at least one data row" });
+        }
 
-      const prediction = await storage.insertPrediction({
-        ...input,
-        predictedClass: result.predictedClass,
-        confidence: result.confidence,
-        isMalignant: result.isMalignant ? 1 : 0,
-        nearestClasses: result.nearestClasses.join(","),
-      });
+        const header = impedanceLines[0].split(",").map((h) => h.trim().toLowerCase());
+        const columnMap: Record<string, string> = {
+          i0: "i0", io: "i0", pa500: "pa500", hfs: "hfs", da: "da",
+          area: "area", "a/da": "aDa", a_da: "aDa", ada: "aDa",
+          maxip: "maxIp", max_ip: "maxIp", "max ip": "maxIp", dr: "dr", p: "p",
+        };
+        const featureKeys = ["i0", "pa500", "hfs", "da", "area", "aDa", "maxIp", "dr", "p"];
+        const colIndices: Record<string, number> = {};
 
-      res.json({
-        prediction,
-        result,
-      });
-    } catch (error) {
-      console.error("Error running diagnosis:", error);
-      res.status(500).json({ message: "Failed to run diagnosis" });
-    }
-  });
+        for (let i = 0; i < header.length; i++) {
+          const mapped = columnMap[header[i]];
+          if (mapped) colIndices[mapped] = i;
+        }
 
-  app.post("/api/diagnosis-batch", upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
+        const missingCols = featureKeys.filter((k) => !(k in colIndices));
+        if (missingCols.length > 0) {
+          return res.status(400).json({
+            message: `Missing impedance columns: ${missingCols.join(", ")}. Expected: I0, PA500, HFS, DA, Area, A/DA, MaxIP, DR, P`,
+          });
+        }
 
-      const csvText = req.file.buffer.toString("utf-8");
-      const lines = csvText.trim().split(/\r?\n/);
+        const dataRows = impedanceLines.slice(1).filter((l) => l.trim());
+        if (dataRows.length === 0) {
+          return res.status(400).json({ message: "No data row found in impedance file" });
+        }
+        if (dataRows.length > 1) {
+          return res.status(400).json({ message: "Impedance file should contain exactly one sample (one data row). Upload one sample per diagnosis." });
+        }
 
-      if (lines.length < 2) {
-        return res.status(400).json({ message: "CSV file must have a header row and at least one data row" });
-      }
+        let ramanData;
+        let ramanAnalysis;
+        try {
+          ramanData = parseRamanCSV(ramanCsv);
+          if (ramanData.length < 10) {
+            return res.status(400).json({ message: "Raman file must contain at least 10 data points" });
+          }
+          ramanAnalysis = analyzeRamanSpectrum(ramanData);
+        } catch (err: any) {
+          return res.status(400).json({ message: `Raman file error: ${err.message}` });
+        }
 
-      const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+        const trainingData = await storage.getAllImpedanceSamples();
+        if (trainingData.length === 0) {
+          return res.status(500).json({ message: "No training data available" });
+        }
 
-      const columnMap: Record<string, string> = {
-        i0: "i0",
-        io: "i0",
-        pa500: "pa500",
-        hfs: "hfs",
-        da: "da",
-        area: "area",
-        "a/da": "aDa",
-        a_da: "aDa",
-        ada: "aDa",
-        maxip: "maxIp",
-        max_ip: "maxIp",
-        "max ip": "maxIp",
-        dr: "dr",
-        p: "p",
-      };
+        const dataLine = dataRows[0];
+        if (!dataLine?.trim()) {
+          return res.status(400).json({ message: "No data row found in impedance file" });
+        }
 
-      const featureKeys = ["i0", "pa500", "hfs", "da", "area", "aDa", "maxIp", "dr", "p"];
-      const colIndices: Record<string, number> = {};
-
-      for (let i = 0; i < header.length; i++) {
-        const mapped = columnMap[header[i]];
-        if (mapped) colIndices[mapped] = i;
-      }
-
-      const missingCols = featureKeys.filter((k) => !(k in colIndices));
-      if (missingCols.length > 0) {
-        return res.status(400).json({
-          message: `Missing required columns: ${missingCols.join(", ")}. Expected: I0, PA500, HFS, DA, Area, A/DA, MaxIP, DR, P`,
-        });
-      }
-
-      const trainingData = await storage.getAllImpedanceSamples();
-      if (trainingData.length === 0) {
-        return res.status(500).json({ message: "No training data available" });
-      }
-
-      const results: any[] = [];
-      const errors: { row: number; message: string }[] = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-
-        const cols = lines[i].split(",").map((c) => c.trim());
+        const cols = dataLine.split(",").map((c) => c.trim());
         const rowData: Record<string, number> = {};
-
-        let hasError = false;
         for (const key of featureKeys) {
           const val = parseFloat(cols[colIndices[key]]);
           if (isNaN(val)) {
-            errors.push({ row: i + 1, message: `Invalid value for ${key}` });
-            hasError = true;
-            break;
+            return res.status(400).json({ message: `Invalid value for ${key} in impedance file` });
           }
           rowData[key] = val;
         }
-        if (hasError) continue;
 
         const parsed = diagnosisInputSchema.safeParse(rowData);
         if (!parsed.success) {
-          errors.push({ row: i + 1, message: "Validation failed" });
-          continue;
+          return res.status(400).json({ message: "Impedance data validation failed", errors: parsed.error.flatten().fieldErrors });
         }
 
-        const result = predict(parsed.data, trainingData);
+        const impedanceResult = predict(parsed.data, trainingData);
 
         const prediction = await storage.insertPrediction({
           ...parsed.data,
-          predictedClass: result.predictedClass,
-          confidence: result.confidence,
-          isMalignant: result.isMalignant ? 1 : 0,
-          nearestClasses: result.nearestClasses.join(","),
+          predictedClass: impedanceResult.predictedClass,
+          confidence: impedanceResult.confidence,
+          isMalignant: impedanceResult.isMalignant ? 1 : 0,
+          nearestClasses: impedanceResult.nearestClasses.join(","),
         });
 
-        results.push({
-          row: i + 1,
+        res.json({
           prediction,
-          result,
+          impedanceResult,
+          ramanAnalysis,
         });
+      } catch (error) {
+        console.error("Error running diagnosis:", error);
+        res.status(500).json({ message: "Failed to run diagnosis" });
       }
-
-      res.json({
-        total: results.length + errors.length,
-        successful: results.length,
-        failed: errors.length,
-        results,
-        errors,
-      });
-    } catch (error) {
-      console.error("Error running batch diagnosis:", error);
-      res.status(500).json({ message: "Failed to process file" });
     }
-  });
+  );
 
   app.get("/api/diagnosis-history", async (_req, res) => {
     try {
