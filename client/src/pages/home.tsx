@@ -67,7 +67,7 @@ const stats = [
 
 export default function Home() {
   usePageMeta({
-    title: "QuantumDx - AI Cancer Diagnostics for Physicians",
+    title: "Cellytics - AI Cancer Diagnostics for Physicians",
     description: "AI-powered tissue classification platform for physicians. Input impedance spectroscopy data and receive instant predictions on whether tissue samples are cancerous or benign.",
   });
 

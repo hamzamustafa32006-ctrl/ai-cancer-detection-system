@@ -1,4 +1,4 @@
-# QuantumDx - AI Cancer Diagnostics Platform for Physicians
+# Cellytics - AI Cancer Diagnostics Platform for Physicians
 
 ## Overview
 An AI-powered diagnostic support platform for physicians. Doctors input electrical impedance spectroscopy measurements and receive instant tissue classification predictions (cancerous vs benign) based on a KNN classifier trained on 106 verified breast tissue samples.
@@ -14,7 +14,7 @@ An AI-powered diagnostic support platform for physicians. Doctors input electric
 - **Backend**: Express.js API with KNN classifier for tissue classification, PostgreSQL storage
 - **Database**: PostgreSQL with drizzle-orm, seeded from CSV data (106 breast tissue impedance samples)
 - **Classifier**: K-Nearest Neighbors (K=7) with z-score normalization, binary classification (malignant vs benign)
-- **Styling**: Dark-first scientific theme with teal/cyan accents (HSL 175), Inter font, JetBrains Mono for code
+- **Styling**: Dark-first scientific theme with navy blue accents (#07235A / HSL 220), Inter font, JetBrains Mono for code
 
 ## Pages
 1. **Home** (`/`) - Doctor-focused landing page with platform overview and CTA to diagnosis

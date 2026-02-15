@@ -43,7 +43,7 @@ export function AppSidebar() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">
-                QuantumDx
+                Cellytics
               </span>
               <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                 AI Cancer Platform

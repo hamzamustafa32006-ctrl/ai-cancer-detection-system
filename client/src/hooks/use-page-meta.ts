@@ -7,7 +7,7 @@ interface PageMeta {
 
 export function usePageMeta({ title, description }: PageMeta) {
   useEffect(() => {
-    document.title = `${title} | QuantumDx`;
+    document.title = `${title} | Cellytics`;
 
     let metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
